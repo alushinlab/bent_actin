@@ -1,5 +1,37 @@
 #!/mnt/data1/Matt/anaconda_install/anaconda2/envs/matt_EMAN2/bin/python
 ################################################################################
+# imports
+import argparse; import sys
+parser = argparse.ArgumentParser('Generate noisy and noiseless 2D projections of randomly oriented and translated MRC files.')
+parser.add_argument('--input_mrc_dir', type=int, help='input directory containing MRC files to be rotated, translated, CTF-convolved, and projected')
+parser.add_argument('--output_noise_dir', type=float, help='output directory to store noisy 2D projections')
+parser.add_argument('--output_noiseless_dir', type=str, help='output directory to store noiseless 2D projections')
+parser.add_argument('--num', type=str, help='total number of projections to make')
+parser.add_argument('--threads', type=str, help='total number of parallel threads to launch')
+args = parser.parse_args()
+
+if(args.input_mrc_dir == None or args.output_noise_dir == None or args.output_noiseless_dir):
+	sys.exit('Please enter an input_mrc_dir, AND an output_noise_dir, AND an output_noiseless_dir')
+
+if(args.threads == None):
+	print('No thread number specified, using one thread')
+	sys.exit('Please enter an odd number for your --subunits flag')
+
+folder = args.input_mrc_dir
+noNoise_outputDir = args.output_noise_dir
+noise_outputDir = args.output_noiseless_dir
+NUM_TO_MAKE = args.num
+
+if(folder[-1] != '/'): folder = folder + '/'
+
+if(noNoise_outputDir[-1] != '/'): noNoise_outputDir = noNoise_outputDir + '/'
+
+if(noise_outputDir[-1] != '/'): noise_outputDir = noise_outputDir + '/'
+
+
+print('The program will make %0d 2D projections')%(NUM_TO_MAKE)
+
+################################################################################
 # import of python packages
 import numpy as np
 from EMAN2 import *
