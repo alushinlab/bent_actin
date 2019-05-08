@@ -1,21 +1,12 @@
 #!/mnt/data1/Matt/anaconda_install/anaconda2/envs/matt_EMAN2/bin/python
 ################################################################################
 # import of python packages
-import numpy as np
-from EMAN2 import *
-import matplotlib.pyplot as plt
-from tqdm import tqdm
-import os
-import random
-from sparx import *
-import mrcfile
-import json
+import numpy as np; import matplotlib.pyplot as plt
+from EMAN2 import *; from sparx import *; import mrcfile
+import json; import glob
 from multiprocessing import Pool
+import os; from tqdm import tqdm
 ################################################################################
-################################################################################
-def rand_ang():
-	return int(random.random()*360)
-
 ################################################################################
 noNoise_outputDir = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/test_output_noiseless/'
 noise_outputDir = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/test_output_noise/'
@@ -27,20 +18,24 @@ for file_name in os.listdir(folder):
 		actin_orig.append(EMData(folder+file_name))
 
 ################################################################################
+# image sizes
 box_len = 512; BL = box_len / 2
+# microscope parameters, for SPARX/EMAN2 CTF convolution
 cs = 2.7; voltage = 300.0 # mm, kV
 apix = 1.03; bfactor = 200.0; ampcontr = 10.0 # Angstroms, A^2, unitless
 astigmatism_amplitude = 10.0; astigmatism_angle = 0.0# nm, degrees
 
+################################################################################
 def launch_parallel_process(thread_idx):
-	index=NUM_TO_MAKE*thread_idx
-	for i in tqdm(range(0,NUM_TO_MAKE)):
+	index=num_per_proc*thread_idx
+	for i in tqdm(range(0,num_per_proc)):
+		local_random_state = np.random.RandomState(None)
 		# First: randomly pick one of the actin mrc files that were loaded into actin_orig
-		r0 = random.randint(0,len(actin_orig)-1)
+		r0 = local_random_state.randint(0,len(actin_orig))
 		rotated_actin = actin_orig[r0].copy() 
 		# Rotation angles: azimuth, alt, phi, then Translations: tx, ty,tz
-		r1, r2, r3 = 90,90,int(random.random()*360)
-		r4, r5, r6 = np.random.normal(0, 100), np.random.normal(0, 100), np.random.normal(0, 100)
+		r1, r2, r3 = 90,90,int(local_random_state.random_sample()*360)
+		r4, r5, r6 = local_random_state.normal(0, 75), local_random_state.normal(0, 75), local_random_state.normal(0, 75)
 		t = Transform()
 		t.set_params({'type':'eman','az':r1, 'alt':r2, 'phi':r3, 'tx':r4, 'ty':r5, 'tz':r6})
 		rotated_actin.transform(t) # apply rotation and translation
@@ -52,12 +47,12 @@ def launch_parallel_process(thread_idx):
 		# Save the target image
 		target = proj_eman_np_padded[center-BL:center+BL, center-BL:center+BL]
 		target = (target - np.mean(target)) / np.std(target) # normalize
-		with mrcfile.new(noNoise_outputDir + 'actin_rotated%d.mrc'%(i+NUM_TO_MAKE+index), overwrite=True) as mrc:
+		with mrcfile.new(noNoise_outputDir + 'actin_rotated%05d.mrc'%(i+num_per_proc*thread_idx), overwrite=True) as mrc:
 			mrc.set_data(target.astype('float32'))
 		
 		proj_eman = EMNumPy.numpy2em(proj_eman_np_padded) # convert back to EMAN2 format
 		# Create CTF object and convolve CTF with projection
-		defocus = np.random.uniform(1.6, 4.0) # microns (positive means underfocus)
+		defocus = local_random_state.uniform(1.6, 4.0) # microns (positive means underfocus)
 		ctf = generate_ctf([defocus,cs,voltage, apix,bfactor,ampcontr,astigmatism_amplitude, astigmatism_angle])
 		proj_eman_ctf = filt_ctf(proj_eman, ctf)
 		# Convert to numpy and crop
@@ -67,28 +62,45 @@ def launch_parallel_process(thread_idx):
 		proj_np_crop = (proj_np_crop - np.mean(proj_np_crop)) / np.std(proj_np_crop)
 		# Take FFT for noise addition
 		fft2D = np.fft.fft2(proj_np_crop)
-		rand_var = max(np.random.normal(60000000,15000000),0.0) # generate variance of noise 500000,10000
+		rand_var = max(local_random_state.normal(60000000,15000000),0.0) # generate variance of noise 500000,10000
 		# define noise to be added to image
-		noise = np.random.normal(0, rand_var**0.5, (box_len,box_len,2))
+		noise = local_random_state.normal(0, rand_var**0.5, (box_len,box_len,2))
 		noise = noise[:,:,0] + 1j*noise[:,:,1]
 		fft2D_plus_noise = fft2D + noise
 		rotated_actin_plus_noise = np.fft.ifftn(fft2D_plus_noise).real
 		rotated_actin_plus_noise = (rotated_actin_plus_noise - np.mean(rotated_actin_plus_noise)) / np.std(rotated_actin_plus_noise)
-		with mrcfile.new(noise_outputDir + 'actin_rotated%d.mrc'%(i+NUM_TO_MAKE+index), overwrite=True) as mrc:
+		with mrcfile.new(noise_outputDir + 'actin_rotated%05d.mrc'%(i+num_per_proc*thread_idx), overwrite=True) as mrc:
 			mrc.set_data(rotated_actin_plus_noise.astype('float32'))
 		
 		# Write text file with all random values and which actin model (curvature and phi) was chosen
-		params = {'actin_num':r0, 'alpha':r1, 'beta':r2, 'gamma':r3, 'tx':r4, 'ty':r5, 'tz':r6, 'defocus':defocus, 'iteration':i+15000}
-		with open(noise_outputDir+'params_%d.json'%(NUM_TO_MAKE+index), 'a') as fp:
+		params = {'actin_num':r0, 'alpha':r1, 'beta':r2, 'gamma':r3, 'tx':r4, 'ty':r5, 'tz':r6, 'defocus':defocus, 'iteration':i+num_per_proc*thread_idx}
+		with open(noise_outputDir+'params_%02d.json'%(num_per_proc*thread_idx), 'a') as fp:
 			data_to_write = json.dumps(params)
 			fp.write(data_to_write + '\n')
 
-NUM_TO_MAKE = 2
-nProcs = 5
+################################################################################
+# run in parallel
+TOTAL_NUM_TO_MAKE = 20
+nProcs = 10
+num_per_proc = TOTAL_NUM_TO_MAKE / nProcs
 if __name__ == '__main__':
 	p=Pool(nProcs)
 	p.map(launch_parallel_process, range(0, nProcs))
 
+################################################################################
+# Now all files are written, combine all json files into one master json file
+read_files = glob.glob(noise_outputDir+'params_*.json')
+output_list = []
+for f in read_files:
+	for line in open(f, 'r'):
+		output_list.append(json.loads(line))
+
+#sort the json dictionaries based on iteration number
+output_list = sorted(output_list, key=lambda i: i['iteration'])
+for line in output_list:
+	with open(noise_outputDir+'master_params.json', 'a') as fp:
+		data_to_write = json.dumps(line)
+		fp.write(data_to_write + '\n')
 
 
 
