@@ -78,7 +78,7 @@ other files in this directory, but all files ending in .mrc must be 3D volumes
 Have two output directories to store the noisy and noiseless projections. Ideally
 these files will be empty, but if not, they must at least not contain any .json files.
 ```
-./projection_generator.py --input_mrc_dir input_dir --output_noise_dir output_noise/ --output_noiseless_dir output_noNoise/ --numProjs projectionNumber --nProcs threadNumber
+./projection_generator.py --input_mrc_dir input_dir --output_noise_dir output_noise --output_noiseless_dir output_noNoise --numProjs projectionNumber --nProcs threadNumber
 ```
 **Outputs**
 - Noisy 2D projections
@@ -109,11 +109,9 @@ This command will lowpass filter each projection to 15 angstroms and normalize i
 
 python 2.7;
 numpy;
-matplotlib;
 tqdm;
 scipy;
 
-ProDy;
 sparx;
 EMAN2;
 mrcfile;

@@ -37,7 +37,7 @@ if(noise_outputDir[-1] != '/'): noise_outputDir = noise_outputDir + '/'
 print('The program will now generate %d 2D projections'%(args.numProjs/args.nProcs*args.nProcs))
 ################################################################################
 # import of python packages
-import numpy as np; import matplotlib.pyplot as plt
+import numpy as np
 from EMAN2 import *; from sparx import *; import mrcfile
 import json; import glob
 from multiprocessing import Pool
