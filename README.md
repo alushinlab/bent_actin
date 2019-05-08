@@ -71,8 +71,10 @@ Where:
 - box = box size in voxels
 
 **To Run projection_generator.py**
+
 Have a directory holding your MRC files that will be projected. There may be 
 other files in this directory, but all files ending in .mrc must be 3D volumes
+
 Have two output directories to store the noisy and noiseless projections. Ideally
 these files will be empty, but if not, they must at least not contain any .json files.
 ```
@@ -85,6 +87,7 @@ these files will be empty, but if not, they must at least not contain any .json 
 the specified actin file and apply these parameters to generate that projection).
 
 **Some Notes**
+
 I merge the json files at the end into a file called master.json.
 
 numProjs should be a multiple of nProcs. If it is not, the program will round 
@@ -117,13 +120,13 @@ mrcfile;
 
 **Known Bugs/Issues:**
 
-1) In the json file output, the 'actin_num' key refers to the position in the
+- In the json file output, the 'actin_num' key refers to the position in the
 actin model array that the MRC file was loaded into. I should update this to instead 
 be the file name, not the position in the array.
-2) Sometimes, after the script has executed, python will print messages about the
+- Sometimes, after the script has executed, python will print messages about the
 job finishing. I am not sure why these outputs show up or how to suppress them.
 They do not effect functionality. 
-3) If you try to kill the script while it is running, it might not be terminated
+- If you try to kill the script while it is running, it might not be terminated
 properly. This is a consequence of how python handles multiprocessing. I would 
 recommend not killing the script once started. If it must be terminated, closing
 the terminal should stop it.
