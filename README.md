@@ -12,7 +12,7 @@ In make\_bent\_actin, there are two provided scripts:
 - generate\_bent\_actin\_helper\_fxns.py - contains helper functions called
 by generate\_bent\_actin\_streamlined.py
 
-**To use:**
+
 
 Have both python files in your current directory, make generate\_bent\_actin\_streamlined.py 
 executable, have 'actin\_28mer\_centered.pdb' in your current directory, and 
