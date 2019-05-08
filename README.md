@@ -42,7 +42,7 @@ I have found it convenient to create an anaconda virtual environment with python
 use pip to install these libraries (scipy and matplotlib should come with numpy). 
 There are certainly other ways to install these libraries, but this way worked for me.
 
-**Known Bugs:**
+**Known Bugs/Issues:**
 
 Currently none with this code. However, if the numSubunits is greater than 33, 
 Chimera will not render the PDB properly, probably because it is too large. All 
@@ -50,7 +50,7 @@ of the information is still properly in the PDB file, it is a rendering issue
 with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
 
 ## 2) make_synthetic_data
-In make\_synthetic\_data there is one executable python file called 'eman2\_projections.py.'
+In make\_synthetic\_data there is one executable python file called 'projection\_generator.py'
 This script requires as input a directory containing an arbitrary number of .mrc files.
 It currently rotates the MRC file in plane and translates in x,y,z using EMAN2 
 transformation functions. Then it convolves the MRC volume with a CTF using a SPARX 
@@ -70,19 +70,13 @@ Where:
 - res = resolution to which the .mrc file will be lowpass filtered
 - box = box size in voxels
 
-**Although this script is fully functional, it is still a work in progress**
-
-Still TODO: 
-1) make as executable command line script requiring user input to specify where to put
-input folder name and output folder names for noisy and non-noisy data
-2) also could use input to specify how many projections to make
-3) could run one single script in parallel, but requires careful attention for json files;
-can be done. I just need to take the time to do it.
-4) Instead of using actin model number that was loaded in, give the file name for this param
-
-**To Run eman2_projections.py.**
+**To Run projection_generator.py**
+Have a directory holding your MRC files that will be projected. There may be 
+other files in this directory, but all files ending in .mrc must be 3D volumes
+Have two output directories to store the noisy and noiseless projections. Ideally
+these files will be empty, but if not, they must at least not contain any .json files.
 ```
-./eman2_projections.py
+./projection_generator.py --input_mrc_dir input_dir --output_noise_dir output_noise/ --output_noiseless_dir output_noNoise/ --numProjs projectionNumber --nProcs threadNumber
 ```
 **Outputs**
 - Noisy 2D projections
@@ -90,9 +84,16 @@ can be done. I just need to take the time to do it.
 - json files storing parameters corresponding to that projection (you can take 
 the specified actin file and apply these parameters to generate that projection).
 
+**Some Notes**
+I merge the json files at the end into a file called master.json.
+
+numProjs should be a multiple of nProcs. If it is not, the program will round 
+numProjs down to be a multiple of nProcs.
+
+
 Because I am currently only trying to find large conformational changes, I have 
 found it useful to lowpass filter my noiseless 2D projections to 15 angstroms.
-To do so, I copy my projections to a new directory and run:
+To do so, I copy my noiseless projections to a new directory and run:
 ```
 for file in ./*
 do
@@ -113,6 +114,19 @@ ProDy;
 sparx;
 EMAN2;
 mrcfile;
+
+**Known Bugs/Issues:**
+
+1) In the json file output, the 'actin_num' key refers to the position in the
+actin model array that the MRC file was loaded into. I should update this to instead 
+be the file name, not the position in the array.
+2) Sometimes, after the script has executed, python will print messages about the
+job finishing. I am not sure why these outputs show up or how to suppress them.
+They do not effect functionality. 
+3) If you try to kill the script while it is running, it might not be terminated
+properly. This is a consequence of how python handles multiprocessing. I would 
+recommend not killing the script once started. If it must be terminated, closing
+the terminal should stop it.
 
 ## 3) train_neural_network
 This script trains a contractive, denoising autoencoder to reconstruct a noiseless
