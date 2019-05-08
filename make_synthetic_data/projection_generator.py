@@ -1,4 +1,40 @@
 #!/mnt/data1/Matt/anaconda_install/anaconda2/envs/matt_EMAN2/bin/python
+# imports
+import argparse; import sys
+parser = argparse.ArgumentParser('Generate noisy and noiseless 2D projections of randomly oriented and translated MRC files.')
+parser.add_argument('--input_mrc_dir', type=str, help='input directory containing MRC files to be rotated, translated, CTF-convolved, and projected')
+parser.add_argument('--output_noise_dir', type=str, help='output directory to store noisy 2D projections')
+parser.add_argument('--output_noiseless_dir', type=str, help='output directory to store noiseless 2D projections')
+parser.add_argument('--numProjs', type=int, help='total number of projections to make')
+parser.add_argument('--nProcs', type=int, help='total number of parallel threads to launch')
+args = parser.parse_args()
+print('')
+if(args.input_mrc_dir == None or args.output_noise_dir == None or args.output_noiseless_dir == None):
+	print('Please enter an input_mrc_dir, AND an output_noise_dir, AND an output_noiseless_dir')
+	sys.exit('The preferred input style may be found with ./projection_generator.py -h')
+
+if(args.numProjs == None):
+	sys.exit('Please enter the number of projection images you would like with the --numProjs flag')
+
+if(args.nProcs == None):
+	print('No process number specified, using one thread')
+	nProcs = 1
+else:
+	nProcs = args.nProcs
+
+if(args.numProjs % nProcs != 0):
+	print('The numProjs that you specified was not a multiple of nProcs.')
+	print('Instead of %d 2D projections, this program will generate %d 2D projections'%(args.numProjs, args.numProjs/nProcs*nProcs))
+
+folder = args.input_mrc_dir
+noNoise_outputDir = args.output_noise_dir
+noise_outputDir = args.output_noiseless_dir
+TOTAL_NUM_TO_MAKE = args.numProjs
+
+if(folder[-1] != '/'): folder = folder + '/'
+if(noNoise_outputDir[-1] != '/'): noNoise_outputDir = noNoise_outputDir + '/'
+if(noise_outputDir[-1] != '/'): noise_outputDir = noise_outputDir + '/'
+print('The program will now generate %d 2D projections'%(args.numProjs/args.nProcs*args.nProcs))
 ################################################################################
 # import of python packages
 import numpy as np; import matplotlib.pyplot as plt
@@ -8,10 +44,7 @@ from multiprocessing import Pool
 import os; from tqdm import tqdm
 ################################################################################
 ################################################################################
-noNoise_outputDir = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/test_output_noiseless/'
-noise_outputDir = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/test_output_noise/'
 # import data
-folder = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/test_input_mrc/'
 actin_orig = []
 for file_name in os.listdir(folder):
 	if(file_name[-4:] == '.mrc' and file_name[:10] == 'bent_actin'):
@@ -80,8 +113,6 @@ def launch_parallel_process(thread_idx):
 
 ################################################################################
 # run in parallel
-TOTAL_NUM_TO_MAKE = 20
-nProcs = 10
 num_per_proc = TOTAL_NUM_TO_MAKE / nProcs
 if __name__ == '__main__':
 	p=Pool(nProcs)
@@ -101,7 +132,5 @@ for line in output_list:
 	with open(noise_outputDir+'master_params.json', 'a') as fp:
 		data_to_write = json.dumps(line)
 		fp.write(data_to_write + '\n')
-
-
 
 
