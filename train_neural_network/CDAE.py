@@ -66,7 +66,7 @@ folder = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/'
 noise_folder = folder + 'rotated_actin_noise_pink_moreNoise_large/'
 noNoise_folder_lp = folder + 'rotated_actin_noNoise_pink_moreNoise_large_lp15/'
 
-train, target = import_synth_data(noise_folder, noNoise_folder_lp, 512, 10000, 35000)
+train, target = import_synth_data(noise_folder, noNoise_folder_lp, 512, 10000, 10050)
 
 #add extra dimension at end because only one color channel
 train = np.expand_dims(train, axis=-1)
