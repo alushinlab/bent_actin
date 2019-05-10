@@ -27,8 +27,8 @@ if(args.numProjs % nProcs != 0):
 	print('Instead of %d 2D projections, this program will generate %d 2D projections'%(args.numProjs, args.numProjs/nProcs*nProcs))
 
 folder = args.input_mrc_dir
-noNoise_outputDir = args.output_noise_dir
-noise_outputDir = args.output_noiseless_dir
+noNoise_outputDir = args.output_noiseless_dir
+noise_outputDir = args.output_noise_dir
 TOTAL_NUM_TO_MAKE = args.numProjs
 
 if(folder[-1] != '/'): folder = folder + '/'
@@ -62,13 +62,12 @@ astigmatism_amplitude = 10.0; astigmatism_angle = 0.0# nm, degrees
 def launch_parallel_process(thread_idx):
 	index=num_per_proc*thread_idx
 	for i in tqdm(range(0,num_per_proc)):
+		r0 = rs[thread_idx,i,0]; r1 = 90; r2 = 90; r3 = rs[thread_idx,i,2]; r4 = rs[thread_idx,i,1]; r5 = 0; r6 = 0
 		local_random_state = np.random.RandomState(None)
 		# First: randomly pick one of the actin mrc files that were loaded into actin_orig
 		r0 = local_random_state.randint(0,len(actin_orig))
 		rotated_actin = actin_orig[r0].copy() 
 		# Rotation angles: azimuth, alt, phi, then Translations: tx, ty,tz
-		r1, r2, r3 = 90,90,int(local_random_state.random_sample()*360)
-		r4, r5, r6 = local_random_state.normal(0, 75), local_random_state.normal(0, 75), local_random_state.normal(0, 75)
 		t = Transform()
 		t.set_params({'type':'eman','az':r1, 'alt':r2, 'phi':r3, 'tx':r4, 'ty':r5, 'tz':r6})
 		rotated_actin.transform(t) # apply rotation and translation
@@ -113,6 +112,15 @@ def launch_parallel_process(thread_idx):
 
 ################################################################################
 # run in parallel
+rs = []
+for i in range(0, 20):#len(actin_orig)):
+	for j in range(-90,91,30):
+		for k in range(0,16):
+			rs.append([i,j,k*22.5])
+
+rs = np.asarray(rs)
+rs = np.reshape(rs, (20,112,3))
+TOTAL_NUM_TO_MAKE = rs.size/3
 num_per_proc = TOTAL_NUM_TO_MAKE / nProcs
 if __name__ == '__main__':
 	p=Pool(nProcs)

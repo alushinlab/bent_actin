@@ -11,6 +11,7 @@ from keras import layers
 from keras.models import Model
 import tensorflow as tf
 import json
+from mpl_toolkits.mplot3d import Axes3D
 ################################################################################
 import keras.backend as K
 def custom_loss(weights, outputs):
@@ -35,7 +36,7 @@ def import_synth_data(noise_folder, noNoise_folder, box_length, NUM_IMGS_MIN, NU
 	cntr=0
 	print('Loading files from ' + noise_folder)
 	for i in tqdm(range(NUM_IMGS_MIN, NUM_IMGS_MAX)):
-		file_name = 'actin_rotated%05d.mrc'%(i*4)
+		file_name = 'actin_rotated%05d.mrc'%(i)
 		noise_data = None; noNoise_data = None
 		with mrcfile.open(noise_folder + file_name) as mrc:
 			if(mrc.data.shape == (box_length,box_length)):
@@ -56,14 +57,15 @@ def import_synth_data(noise_folder, noNoise_folder, box_length, NUM_IMGS_MIN, NU
 
 ################################################################################
 # load CDAE model
-model_path = '../train_neural_network/non_parallel_non_greedy.h5'
+#model_path = '../train_neural_network/non_parallel_non_greedy.h5'
+model_path = '../train_neural_network/big_dataset_50000_loss1943.h5'
 autoencoder = keras.models.load_model(model_path, custom_objects={'contractive_loss':custom_loss(np.zeros((1,1,1)), np.zeros((1,1)))})
 
 # load samples that exist along manifold
-noise_holder, noNoise_holder = import_synth_data('output_noisy/', 'output_noiseless_lp15/', 512, 0, 4)
+noise_holder, noNoise_holder = import_synth_data('output_noise/', 'output_noNoise/', 512, 0, 2240)
 
 # check conv-dense autoencoder
-check_num = 0
+check_num = 1
 cm = plt.get_cmap('gray')#plt.cm.greens
 im_to_test = np.expand_dims(np.expand_dims(noise_holder[check_num], axis=0),axis=-1)
 prediction = autoencoder.predict(im_to_test)[0,:,:,0]
@@ -76,22 +78,56 @@ ax[1,1].plot(encoded_pred); plt.show()
 ################################################################################
 # load json file
 param_list = []
-for line in open('output_noisy/master_params.json','r'):
+for line in open('output_noise/master_params.json','r'):
 	param_list.append(json.loads(line))
 
 # get corners
-param_list[0]['tx'], param_list[0]['ty']
-param_list[1]['tx'], param_list[1]['ty']
+param_list[0]['tx'], param_list[0]['gamma']
+param_list[1]['tx'], param_list[1]['gamma']
 param_list[2]['tx'], param_list[2]['ty']
 param_list[3]['tx'], param_list[3]['ty']
 
+params = []
+for i in range(0, len(param_list)):
+	params.append([param_list[i]['gamma'], param_list[i]['tx'], param_list[i]['actin_num'], param_list[i]['iteration']])
+
+params = np.asarray(params)
+params = params[params[:,-2].argsort()]
+first_actin_idxs = params[1*112:2*112][:,-1]
 ################################################################################
 # Go from encoded input to decoded image corresponding to encoding
 # first encode an example
-check_num = 0
-im_to_test = np.expand_dims(np.expand_dims(noise_holder[check_num], axis=0),axis=-1)
-encoder_model = Model(autoencoder.input, autoencoder.layers[21].output)
-encoded_pred_0 = encoder_model.predict(im_to_test)[0]
+encoded_preds = []
+for i in tqdm(range(0, len(noise_holder))):
+	check_num = i
+	if i in(first_actin_idxs):
+		im_to_test = np.expand_dims(np.expand_dims(noise_holder[check_num], axis=0),axis=-1)
+		encoder_model = Model(autoencoder.input, autoencoder.layers[21].output)
+		encoded_preds.append(encoder_model.predict(im_to_test)[0])
+
+encoded_preds = np.asarray(encoded_preds)
+
+
+from sklearn.decomposition import PCA
+pca = PCA(n_components=4)
+PCA_2 = pca.fit_transform(encoded_preds)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(PCA_2[:,1], PCA_2[:,2], PCA_2[:,3]); plt.show()
+
+from sklearn.manifold import Isomap
+iso = Isomap(n_neighbors=5, n_components=4)
+iso_4 = iso.fit_transform(encoded_preds)
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.scatter(iso_4[:,0], iso_4[:,1], iso_4[:,2]); plt.show()
+
+
+cumsum = np.cumsum(pca.explained_variance_ratio_)
+plt.plot(cumsum); plt.show()
+
+
+
 
 check_num = 1
 im_to_test = np.expand_dims(np.expand_dims(noise_holder[check_num], axis=0),axis=-1)

@@ -27,8 +27,8 @@ if(args.numProjs % nProcs != 0):
 	print('Instead of %d 2D projections, this program will generate %d 2D projections'%(args.numProjs, args.numProjs/nProcs*nProcs))
 
 folder = args.input_mrc_dir
-noNoise_outputDir = args.output_noise_dir
-noise_outputDir = args.output_noiseless_dir
+noNoise_outputDir = args.output_noiseless_dir
+noise_outputDir = args.output_noise_dir
 TOTAL_NUM_TO_MAKE = args.numProjs
 
 if(folder[-1] != '/'): folder = folder + '/'
@@ -87,7 +87,7 @@ def launch_parallel_process(thread_idx):
 		# Create CTF object and convolve CTF with projection
 		defocus = local_random_state.uniform(1.6, 4.0) # microns (positive means underfocus)
 		ctf = generate_ctf([defocus,cs,voltage, apix,bfactor,ampcontr,astigmatism_amplitude, astigmatism_angle])
-		proj_eman_ctf = filt_ctf(proj_eman, ctf)
+		proj_eman_ctf = proj_eman#filt_ctf(proj_eman, ctf)
 		# Convert to numpy and crop
 		proj_np_ctf = EMNumPy.em2numpy(proj_eman_ctf)
 		center = proj_np_ctf.shape[0]/2

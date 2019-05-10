@@ -20,11 +20,10 @@ def plot_history(history):
 ################################################################################
 # method to import synthetic data from files
 def import_synth_data(noise_folder, noNoise_folder, box_length, NUM_IMGS_MIN, NUM_IMGS_MAX):
-	noise_holder = np.zeros((NUM_IMGS_MAX-NUM_IMGS_MIN,512,512)); noNoise_holder = np.zeros((NUM_IMGS_MAX-NUM_IMGS_MIN,512,512))
-	cntr=0
+	noise_holder = []; noNoise_holder = []
 	print('Loading files from ' + noise_folder)
 	for i in tqdm(range(NUM_IMGS_MIN, NUM_IMGS_MAX)):
-		file_name = 'actin_rotated%d.mrc'%i
+		file_name = 'actin_rotated%05d.mrc'%i
 		noise_data = None; noNoise_data = None
 		with mrcfile.open(noise_folder + file_name) as mrc:
 			if(mrc.data.shape == (box_length,box_length)):
@@ -34,14 +33,13 @@ def import_synth_data(noise_folder, noNoise_folder, box_length, NUM_IMGS_MIN, NU
 				noNoise_data = mrc.data
 				
 		if(not np.isnan(noise_data).any() and not np.isnan(noNoise_data).any()): #doesn't have a nan
-			noise_holder[cntr] = noise_data
-			noNoise_holder[cntr] = noNoise_data
-			cntr=cntr+1
+			noise_holder.append(noise_data)
+			noNoise_holder.append(noNoise_data)
 		
 		else: # i.e. if mrc.data does have an nan, skip it and print a statement
 			print('Training image number %d has at least one nan value. Skipping this image.'%i)
 	
-	return noise_holder[:cntr], noNoise_holder[:cntr]
+	return noise_holder, noNoise_holder
 
 ################################################################################
 #https://wiseodd.github.io/techblog/2016/12/05/contractive-autoencoder/
@@ -66,7 +64,13 @@ folder = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/'
 noise_folder = folder + 'rotated_actin_noise_pink_moreNoise_large/'
 noNoise_folder_lp = folder + 'rotated_actin_noNoise_pink_moreNoise_large_lp15/'
 
-train, target = import_synth_data(noise_folder, noNoise_folder_lp, 512, 10000, 10050)
+folder2 = '/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/make_synthetic_data/'
+noise_folder_2 =  folder2 + 'noise_white/'
+noNoise_folder_lp_2 = folder2 + 'noNoise_white_lp15/'
+
+train, target = import_synth_data(noise_folder_2, noNoise_folder_lp_2, 512, 0, 19900)
+#train_2, target_2 = import_synth_data(noise_folder_2, noNoise_folder_lp_2, 512, 0, 29985)
+train = np.asarray(train); target = np.asarray(target)
 
 #add extra dimension at end because only one color channel
 train = np.expand_dims(train, axis=-1)
@@ -108,15 +112,15 @@ def create_model_dense(training_data, full_training, lr):
 	#x = DenseLayerAutoencoder([512,128], activation='relu', dropout=0.01)
 	
 	x = layers.Dense(512, activation='relu')(x) #17
-	x = layers.Dropout(0.05)(x) #18
+	x = layers.Dropout(0.02)(x) #18
 	x = layers.Dense(256, activation='relu')(x) #17
-	x = layers.Dropout(0.05)(x) #18
+	x = layers.Dropout(0.02)(x) #18
 	x = layers.Dense(128, activation='relu')(x) #21
 	x = layers.Dropout(0.0)(x) #22
 	x = layers.Dense(256, activation='relu')(x)#25
-	x = layers.Dropout(0.05)(x)#26
+	x = layers.Dropout(0.02)(x)#26
 	x = layers.Dense(512, activation='relu')(x)#25
-	x = layers.Dropout(0.05)(x)#26
+	x = layers.Dropout(0.02)(x)#26
 	x = layers.Dense(32768, activation='relu')(x)#27
 	x = layers.Reshape((64,64,8))(x)#28
 	
@@ -146,7 +150,7 @@ def create_model_dense(training_data, full_training, lr):
 def train_model(train_data, train_target):
 	autoencoder, encoder = create_model_dense(train_data,True, 0.00005)
 	es = keras.callbacks.EarlyStopping(monitor='val_loss', mode='min', verbose=1,patience=2, restore_best_weights=True)
-	history = autoencoder.fit(x=train_data, y=train_target, epochs=10, batch_size=32, verbose=1, validation_data = (val_train[1:], val_target[1:]), callbacks=[es])
+	history = autoencoder.fit(x=train_data, y=train_target, epochs=12, batch_size=16, verbose=1, validation_data = (val_train[1:], val_target[1:]), callbacks=[es])
 	return [autoencoder, history, encoder]
 
 ################################################################################
@@ -155,10 +159,10 @@ def train_model(train_data, train_target):
 autoencoder_three, history_three, encoder_three = train_model(train,target)
 
 # save the final model
-model_save_name = '../saved_autoencoder_models/curr_best_model_large_dataset_018_loss.h5'
+model_save_name = '../white_noise_20000_loss1645.h5'
 print('Model finished training.\nSaving model as ' + model_save_name)
 autoencoder_three.save(model_save_name)
-plot_history(history)
+plot_history(history_three)
 
 
 
@@ -182,9 +186,9 @@ ax[0,2].plot(encoded_pred); plt.show()
 
 ################################################################################
 # check conv-dense autoencoder
-check_num = 28
+check_num = 30
 cm = plt.get_cmap('gray')#plt.cm.greens
-predict_conv = autoencoder.predict(np.expand_dims(train[check_num], axis=0))[0,:,:,0]
+predict_conv = autoencoder_three.predict(np.expand_dims(train[check_num], axis=0))[0,:,:,0]
 predict_dense = autoencoder_three.predict(np.expand_dims(train[check_num], axis=0))[0,:,:,0]
 fig,ax = plt.subplots(2,3); ax[0,0].imshow(train[check_num,:,:,0], cmap=cm); ax[0,1].imshow(target[check_num,:,:,0], cmap=cm); ax[1,0].imshow(predict_conv, cmap=cm);ax[1,1].imshow(predict_dense,cmap=cm);  #plt.show(block=False)
 
@@ -327,8 +331,8 @@ for i in range(30, 45):
 	check_num = i
 	real_img = np.expand_dims(np.expand_dims(real_data[check_num],axis=0),axis=-1)
 	cm = plt.cm.gray
-	predict_conv = autoencoder.predict(real_img)[0,:,:,0]
-	predict_dense = autoencoder_three.predict(real_img)[0,:,:,0]
+	predict_conv = autoencoder_three.predict(1.5*real_img)[0,:,:,0]
+	predict_dense = autoencoder_three.predict(0.75*real_img)[0,:,:,0]
 	fig,ax = plt.subplots(2,3); _=ax[0,0].imshow(real_img[0,:,:,0], cmap=cm); _=ax[0,1].imshow(real_img[0,:,:,0], cmap=cm); _=ax[1,0].imshow(predict_conv, cmap=cm);_=ax[1,1].imshow(predict_dense,cmap=cm);  #plt.show(block=False)
 	
 	encoder_model = Model(autoencoder_three.input, autoencoder_three.layers[19].output)
