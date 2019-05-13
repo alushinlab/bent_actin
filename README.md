@@ -48,15 +48,6 @@ Currently none with this code. However, if the numSubunits is greater than 33,
 Chimera will not render the PDB properly, probably because it is too large. All 
 of the information is still properly in the PDB file, it is a rendering issue 
 with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
-<div align="center">
-	<img  src="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.png" width="200"></img>
-</div>
-
-<object data="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.pdf" type="application/pdf" width="200px">
-    <embed src="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
 
 
 ## 2) make_synthetic_data

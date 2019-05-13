@@ -13,6 +13,7 @@ import tensorflow as tf
 import json
 from mpl_toolkits.mplot3d import Axes3D
 from helper_manifold_exploration import *
+import matplotlib.ticker as ticker
 ################################################################################
 # load CDAE model
 #model_path = '../train_neural_network/non_parallel_non_greedy.h5'
@@ -71,10 +72,10 @@ iso_4 = iso_fit.transform(encoded_preds)
 # plot curvature contour lines
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-#ax.scatter(iso_4[:,0], iso_4[:,1], iso_4[:,2])
+ax.scatter(iso_4[:,0], iso_4[:,1], iso_4[:,2],s=10)
 for rot in range(0,8):
 	print(rot*22.5)
-	change_curv = get_curvature_contour(rot*22.5,-90,actin_parameters,iso_fit)
+	change_curv = get_curvature_contour(rot*22.5,0,actin_parameters,iso_fit,encoded_preds)
 	cmap = plt.cm.viridis(np.linspace(0.1,0.9,len(range(0,8)))[rot])
 	_=ax.plot(change_curv[:,0], change_curv[:,1], change_curv[:,2], c=cmap, linewidth=2)
 	_=ax.scatter(change_curv[:,0], change_curv[:,1], change_curv[:,2], c=cmap, s=60)
@@ -85,14 +86,13 @@ ax.view_init(elev=35, azim=89)
 ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
 ax.yaxis.set_major_locator(ticker.MultipleLocator(0.5))
 ax.zaxis.set_major_locator(ticker.MultipleLocator(0.5))
+plt.tight_layout()
 plt.show()
 
-plt.savefig('/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/readme_imgs/viridis_curv_contours_3.png', format='png', dpi=50)
+plt.savefig('/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/readme_imgs/viridis_curv_contours_3.png', format='png', dpi=1600)
 
 
-
-
-
+# plot several curves at once
 for j in range(-90,91,30):
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
@@ -109,13 +109,37 @@ for j in range(-90,91,30):
 	ax.xaxis.set_major_locator(ticker.MultipleLocator(0.5))
 	ax.yaxis.set_major_locator(ticker.MultipleLocator(0.5))
 	ax.zaxis.set_major_locator(ticker.MultipleLocator(0.5))
-	plt.savefig('/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/readme_imgs/viridis_curv_contours_transx_%03d.png'%j, format='png', dpi=1600)
+	plt.savefig('/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/readme_imgs/%03d.png'%j, format='png', dpi=1600)
 	plt.show()
 
 
 
 
 
+# decode some samples
+encoded_input = layers.Input(shape=(128,))
+deco = autoencoder.layers[22](encoded_input)
+for i in range(23, len(autoencoder.layers)):
+	deco = autoencoder.layers[i](deco)
+
+decoder_model = Model(encoded_input, deco)
+
+interps_dir = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/predicted_interps_moreDOF_2/'
+no_rot_no_trans = get_isoRotation_and_isoTranslation_idxs(45,90,actin_parameters)
+encodings = encoded_preds[no_rot_no_trans.astype(int)][idxs]
+for j in range(0, len(encodings)-1):
+	I_MAX = 101.0
+	for i in range(0,int(I_MAX)):
+		interp = encodings[j]*(1-i/(I_MAX-1)) + encodings[j+1]*(i/(I_MAX-1))
+		print((1-i/(I_MAX-1),(i/(I_MAX-1))))
+		#plt.scatter(interp[0], interp[1]); plt.show()
+		decoded_1 = decoder_model.predict(np.expand_dims(encodings[j],axis=0))[0,:,:,0]
+		decoded_2 = decoder_model.predict(np.expand_dims(encodings[j+1],axis=0))[0,:,:,0]
+		decoded_interp = decoder_model.predict(np.expand_dims(interp,axis=0))[0,:,:,0]
+		#fig,ax = plt.subplots(1,3); _=ax[0].imshow(decoded_1);_=ax[1].imshow(decoded_2);_=ax[2].imshow(decoded_interp); _=plt.show()
+		
+		with mrcfile.new(interps_dir + 'actin_bent%03d%03d.mrc'%(j,i), overwrite=True) as mrc:
+			mrc.set_data(decoded_interp.astype('float32'))
 
 
 
@@ -124,24 +148,6 @@ for j in range(-90,91,30):
 
 
 
-
-
-
-from sklearn.decomposition import PCA
-pca = PCA(n_components=3)
-pca_fit = pca.fit(encoded_preds)
-pca_full = pca_fit.transform(encoded_preds)
-pca_subset = pca_fit.transform(encoded_preds[no_rot_no_trans.astype(int)])
-plt.scatter(pca_subset[:,0], pca_subset[:,1]); plt.show()
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-ax.scatter(pca_full[:,0], pca_full[:,1], pca_full[:,2])
-ax.scatter(pca_subset[:,0], pca_subset[:,1], pca_subset[:,2], s=50)
-plt.show()
-
-cumsum = np.cumsum(pca_fit.explained_variance_ratio_)
-plt.plot(cumsum); plt.show()
 
 
 
@@ -152,13 +158,7 @@ encoded_pred_1 = encoder_model.predict(im_to_test)[0]
 
 encoded_pred = encoded_pred_0*0.5 + encoded_pred_1*0.5
 
-# then decode an example
-encoded_input = layers.Input(shape=(128,))
-deco = autoencoder.layers[22](encoded_input)
-for i in range(23, len(autoencoder.layers)):
-	deco = autoencoder.layers[i](deco)
 
-decoder_model = Model(encoded_input, deco)
 decoded_0 = decoder_model.predict(np.expand_dims(encoded_preds[0],axis=0))[0,:,:,0]
 plt.imshow(decoded_0); plt.show()
 
