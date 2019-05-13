@@ -52,6 +52,12 @@ with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
 	<img  src="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.png" width="200"></img>
 </div>
 
+<object data="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.pdf" type="application/pdf" width="200px">
+    <embed src="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
+
 
 ## 2) make_synthetic_data
 In make\_synthetic\_data there is one executable python file called 'projection\_generator.py'
