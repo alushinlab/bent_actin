@@ -49,7 +49,7 @@ Chimera will not render the PDB properly, probably because it is too large. All
 of the information is still properly in the PDB file, it is a rendering issue 
 with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
 <div align="center">
-	<img  src="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_1.png" alt="test image" width="200"></img>
+	<img  src="https://github.com/alushinlab/bent_actin/tree/master/readme_imgs/viridis_curv_contours_3.png" alt="test image" width="200"></img>
 </div>
 
 
