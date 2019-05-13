@@ -49,7 +49,7 @@ Chimera will not render the PDB properly, probably because it is too large. All
 of the information is still properly in the PDB file, it is a rendering issue 
 with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
 
-![Alt text] (./readme_imgs/many_actins_black.png?raw=true "Many Actins")
+![Alt text] (readme_imgs/many_actins_black.png "Many Actins")
 
 ## 2) make_synthetic_data
 In make\_synthetic\_data there is one executable python file called 'projection\_generator.py'
