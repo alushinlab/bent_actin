@@ -87,7 +87,7 @@ ax.yaxis.set_major_locator(ticker.MultipleLocator(0.5))
 ax.zaxis.set_major_locator(ticker.MultipleLocator(0.5))
 plt.show()
 
-plt.savefig('/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/readme_imgs/viridis_curv_contours_3.png'%j, format='png', dpi=400)
+plt.savefig('/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/readme_imgs/viridis_curv_contours_3.png', format='png', dpi=50)
 
 
 
