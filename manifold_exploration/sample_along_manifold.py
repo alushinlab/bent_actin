@@ -62,10 +62,10 @@ astigmatism_amplitude = 10.0; astigmatism_angle = 0.0# nm, degrees
 def launch_parallel_process(thread_idx):
 	index=num_per_proc*thread_idx
 	for i in tqdm(range(0,num_per_proc)):
-		r0 = rs[thread_idx,i,0]; r1 = 90; r2 = 90; r3 = rs[thread_idx,i,2]; r4 = rs[thread_idx,i,1]; r5 = 0; r6 = 0
+		r0 = int(rs[thread_idx,i,0]); r1 = 90; r2 = 90; r3 = rs[thread_idx,i,2]; r4 = rs[thread_idx,i,1]; r5 = 0; r6 = 0
 		local_random_state = np.random.RandomState(None)
 		# First: randomly pick one of the actin mrc files that were loaded into actin_orig
-		r0 = local_random_state.randint(0,len(actin_orig))
+		#r0 = local_random_state.randint(0,len(actin_orig))
 		rotated_actin = actin_orig[r0].copy() 
 		# Rotation angles: azimuth, alt, phi, then Translations: tx, ty,tz
 		t = Transform()
@@ -86,7 +86,7 @@ def launch_parallel_process(thread_idx):
 		# Create CTF object and convolve CTF with projection
 		defocus = local_random_state.uniform(1.6, 4.0) # microns (positive means underfocus)
 		ctf = generate_ctf([defocus,cs,voltage, apix,bfactor,ampcontr,astigmatism_amplitude, astigmatism_angle])
-		proj_eman_ctf = filt_ctf(proj_eman, ctf)
+		proj_eman_ctf = proj_eman#filt_ctf(proj_eman, ctf)
 		# Convert to numpy and crop
 		proj_np_ctf = EMNumPy.em2numpy(proj_eman_ctf)
 		center = proj_np_ctf.shape[0]/2
