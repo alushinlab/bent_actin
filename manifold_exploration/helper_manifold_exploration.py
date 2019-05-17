@@ -85,7 +85,7 @@ def load_json_file(json_file_name):
 
 ################################################################################
 # get those indices of projections of a given rotation and translation
-def get_curvature_contour(rot,tx,actin_parameters,iso_fit, encoded_preds):
+def get_curvature_contour(rot,tx,actin_parameters,iso_fit, encoded_preds,idxs):
 	actin_parameters = sorted(actin_parameters, key=lambda x:x.return_params()[2])
 	no_rot_no_trans = []
 	for i in range(0, len(actin_parameters)):

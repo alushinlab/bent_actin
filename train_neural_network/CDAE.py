@@ -60,17 +60,17 @@ def custom_loss(weights, outputs):
 	return contractive_loss
 
 ################################################################################
-folder = '/mnt/data1/Matt/computer_vision/VAE_squiggle/synthetic_data/'
-noise_folder = folder + 'rotated_actin_noise_pink_moreNoise_large/'
-noNoise_folder_lp = folder + 'rotated_actin_noNoise_pink_moreNoise_large_lp15/'
+folder = '/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/make_synthetic_data/'
+noise_folder = folder + 'noise_white/'
+noNoise_folder_lp = folder + 'noNoise_white_lp15/'
 
 folder2 = '/mnt/data1/Matt/computer_vision/VAE_squiggle/bent_actin/make_synthetic_data/'
-noise_folder_2 =  folder2 + 'noise_white/'
-noNoise_folder_lp_2 = folder2 + 'noNoise_white_lp15/'
+noise_folder_2 =  folder2 + 'noise_white_2/'
+noNoise_folder_lp_2 = folder2 + 'noNoise_white_2_lp15/'
 
-train, target = import_synth_data(noise_folder_2, noNoise_folder_lp_2, 512, 0, 19900)
-#train_2, target_2 = import_synth_data(noise_folder_2, noNoise_folder_lp_2, 512, 0, 29985)
-train = np.asarray(train); target = np.asarray(target)
+train, target = import_synth_data(noise_folder_2, noNoise_folder_lp_2, 512, 0, 19998)
+train_2, target_2 = import_synth_data(noise_folder_2, noNoise_folder_lp_2, 512, 0, 24992)
+train = np.asarray(train+train_2); target = np.asarray(target+target_2)
 
 #add extra dimension at end because only one color channel
 train = np.expand_dims(train, axis=-1)
@@ -159,7 +159,7 @@ def train_model(train_data, train_target):
 autoencoder_three, history_three, encoder_three = train_model(train,target)
 
 # save the final model
-model_save_name = '../white_noise_20000_loss1645.h5'
+model_save_name = './white_noise_45000_loss0549.h5'
 print('Model finished training.\nSaving model as ' + model_save_name)
 autoencoder_three.save(model_save_name)
 plot_history(history_three)
@@ -186,13 +186,13 @@ ax[0,2].plot(encoded_pred); plt.show()
 
 ################################################################################
 # check conv-dense autoencoder
-check_num = 30
+check_num = 42
 cm = plt.get_cmap('gray')#plt.cm.greens
 predict_conv = autoencoder_three.predict(np.expand_dims(train[check_num], axis=0))[0,:,:,0]
 predict_dense = autoencoder_three.predict(np.expand_dims(train[check_num], axis=0))[0,:,:,0]
-fig,ax = plt.subplots(2,3); ax[0,0].imshow(train[check_num,:,:,0], cmap=cm); ax[0,1].imshow(target[check_num,:,:,0], cmap=cm); ax[1,0].imshow(predict_conv, cmap=cm);ax[1,1].imshow(predict_dense,cmap=cm);  #plt.show(block=False)
+fig,ax = plt.subplots(2,3); _=ax[0,0].imshow(train[check_num,:,:,0], cmap=cm); _=ax[0,1].imshow(target[check_num,:,:,0], cmap=cm); _=ax[1,0].imshow(predict_conv, cmap=cm);_=ax[1,1].imshow(predict_dense,cmap=cm);  #plt.show(block=False)
 
-encoder_model = Model(autoencoder_three.input, autoencoder_three.layers[19].output)
+encoder_model = Model(autoencoder_three.input, autoencoder_three.layers[21].output)
 encoded_pred = encoder_model.predict(np.expand_dims(train[check_num], axis=0))[0]
 ax[0,2].plot(encoded_pred); plt.show()
 
@@ -327,7 +327,7 @@ for i in range(0, 5):
 
 
 # check both conv and dense part of encoder-decoder
-for i in range(30, 45):
+for i in range(35, 45):
 	check_num = i
 	real_img = np.expand_dims(np.expand_dims(real_data[check_num],axis=0),axis=-1)
 	cm = plt.cm.gray
