@@ -5,7 +5,7 @@ https://www.biorxiv.org/content/10.1101/2022.06.02.494606v1. This repository is 
 2) analysis
 
 ## 1) particle_picking
-This directory contains the scripts used to generate synthetic data, train neural networks, and pick on cryo-EM data
+This directory contains the scripts used to generate synthetic data, train neural networks, and pick on cryo-EM data. The associated README also contains useful instructions on how to run the scripts step-by-step.
 
 ## 2) analysis
 This directory contains the custom scripts used to analyze the data generated in this project.
