@@ -1,13 +1,13 @@
 # Bending Actin Project
-This repository stores the files for Matt's bent actin project. It is currently
+This repository stores the files used for particle picking using a custom neural network approach. It is currently
 organized into four different sections:
 1) make\_bent\_actin: creates 
-2) make\_synthetic\_data
-3) train\_neural\_network
-4) neural\_network\_predictions
+2) generate\_synthetic\_data
+3) train\_neural\_networks
+4) particle\picking\scripts
 
 ## 1) make_bent_actin
-In make\_bent\_actin, there are two provided scripts:
+In make\_bent\_actin, there are two provided python files:
 - generate\_bent\_actin\_streamlined.py - generates the actin filament
 - generate\_bent\_actin\_helper\_fxns.py - contains helper functions called
 by generate\_bent\_actin\_streamlined.py
@@ -31,17 +31,6 @@ Where:
 A PDB file of actin in your current directory. Currently, it must be called 'actin\_28mer\_centered.pdb' 
 but this can be changed in the future if we want to use different models.
 
-python 2.7;
-numpy;
-matplotlib;
-tqdm;
-scipy;
-ProDy;
-
-I have found it convenient to create an anaconda virtual environment with python version 2.7 and 
-use pip to install these libraries (scipy and matplotlib should come with numpy). 
-There are certainly other ways to install these libraries, but this way worked for me.
-
 **Known Bugs/Issues:**
 
 Currently none with this code. However, if the numSubunits is greater than 33, 
@@ -50,15 +39,15 @@ of the information is still properly in the PDB file, it is a rendering issue
 with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
 
 
-## 2) make_synthetic_data
-In make\_synthetic\_data there is one executable python file called 'projection\_generator.py'
-This script requires as input a directory containing an arbitrary number of .mrc files.
-It currently rotates the MRC file in plane and translates in x,y,z using EMAN2 
+## 2) generate_synthetic_data
+In generate\_synthetic\_data there are two executable python files.
+These scripts requires as input a directory containing an arbitrary number of .mrc files.
+The program rotates the MRC file using euler angles and translates in x,y,z using EMAN2 
 transformation functions. Then it convolves the MRC volume with a CTF using a SPARX 
 function, with a randomly chosen defocus value. Then the volume is projected in Z
 and noise is added in Fourier space to the 2D projection. 
 
-I generated my .mrc files by creating several .pdb files, as described above, and 
+I generated my .mrc files by creating several .pdb files, as described using the generate_bent_actin_streamlined.py script, and 
 converting them to .mrc format using EMAN2's pdb2mrc function. You may also use 
 chimera to make these maps if you so desire:
 ```
@@ -106,17 +95,6 @@ done
 ```
 This command will lowpass filter each projection to 15 angstroms and normalize it.
 
-**Required to run:**
-
-python 2.7;
-numpy;
-tqdm;
-scipy;
-
-sparx;
-EMAN2;
-mrcfile;
-
 **Known Bugs/Issues:**
 
 - In the json file output, the 'actin_num' key refers to the position in the
@@ -143,18 +121,6 @@ train the full network on a large dataset.
 
 **The script for this is still under development. I will update the README.md documentation when it is close to being in its final form**
 
-**Required to run:**
-
-python 2.7;
-numpy;
-matplotlib;
-tqdm;
-scipy;
-
-tensorflow-gpu;
-keras (using tensorflow as backend);
-
-mrcfile;
 
 ## 4) neural_network_predictions
 Currently this code is at the end of the previous script. I will decouple these 
