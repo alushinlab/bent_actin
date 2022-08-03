@@ -38,6 +38,8 @@ Chimera will not render the PDB properly, probably because it is too large. All
 of the information is still properly in the PDB file, it is a rendering issue 
 with Chimera. PDBs with very large subunit numbers may be viewed in pymol.
 
+**Example results:**
+The synthetic volumes/models used for this project can be found at https://doi.org/10.5281/zenodo.6917913 in the synthetic_volumes_and_pdb.zip file.
 
 ## 2) generate_synthetic_data
 In generate\_synthetic\_data there are two executable python files.
@@ -108,6 +110,13 @@ properly. This is a consequence of how python handles multiprocessing. I would
 recommend not killing the script once started. If it must be terminated, closing
 the terminal should stop it.
 
+**Example results:**
+The training data for the DAE used in this project can be found at https://doi.org/10.5281/zenodo.6917913 in the DAE_synthetic_data.zip file.
+The training data for the FCN-SS used in this project can be found at https://doi.org/10.5281/zenodo.6917913 in the semanticSegmentation_synthetic_data.zip file.
+
+
+
+
 ## 3) train_neural_networks
 This directory contains the scripts used to train neural networks that may then be used for particle picking. CDAE.py trains a contractive, denoising autoencoder that is able to reconstruct a denoised image from a noisy input. The network architecture employed in this project has been largely replaced by a fully convolutional approach (https://github.com/alushinlab/plastin_bundles), but the dense layers used in this version have interesting implications in terms of manifold learning in the context of filament bending.
 
@@ -119,12 +128,12 @@ Hard code the number of images from the training set that you would like to load
 ```
 ./CDAE.py
 ```
+
 **Outputs**
 - Saved neural network in .h5 file
 
-
-
 **To Run train_FCN_for_semseg.py**
+
 Provide similar input as for CDAE.py, but provide the directory to a set of noisy projections and the corresponding set of semantically segmented images.
 
 Hard code the number of images from the training set that you would like to load as well as the output file names. You may also change hard-coded parameters specific to training to optimize it for a particular use case. The program does not accept command-line arguments, so to run it simply enter:
@@ -134,15 +143,28 @@ Hard code the number of images from the training set that you would like to load
 **Outputs**
 - Saved neural network in .h5 file
 
+**Example results:**
+The trained neural networks used for this project can be found at https://doi.org/10.5281/zenodo.6917913 in the trained_neural_networks.zip file.
 
 
 
 
 ## 4) particle_picking_scripts
-Currently this code is at the end of the previous script. I will decouple these 
-two scripts in my next iteration so that I can first train a network, and then 
-once that network is trained, I can use it to make predictions and see my encoded 
-representations of input images. 
+A set of particle picking scripts are provided. I will outlin an example use case of one of them:
+ - Set up a RELION directory and process the data through motion correction and CTF estimation
+ - In the RELION directory, make a directory called Micrographs_bin4 and bin the motion-corrected micrographs by 4
+ - In the RELION directory, make a directory called particle_picking
+ - In particle_picking, make three directories: trained_networks, pngs, starFiles
+ - Copy trained neural networks to trained_networks
+
+
+**To Run the Picking Script**
+
+Hard code specific picking parameters, including the GPU identity you want to use. The program does not accept command-line arguments, so to run it simply enter:
+```
+./multiple_whole_micrograph_preds.py
+```
+If you are using a workstation with multiple GPUs, you may run multiple instances of the script in separate terminals. This speeds up picking linearly.
 
 
 
