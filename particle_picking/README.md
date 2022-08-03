@@ -108,21 +108,37 @@ properly. This is a consequence of how python handles multiprocessing. I would
 recommend not killing the script once started. If it must be terminated, closing
 the terminal should stop it.
 
-## 3) train_neural_network
-This script trains a contractive, denoising autoencoder to reconstruct a noiseless
-image from a noisy input. At a future date, I will include the neural network's 
-architecture, but for now I will say that I have seven outer convolutional layers
-followed by three inner dense/fully-connected layers to encode a noisy image 
-to a 128-dimensional vector, and the mirror of those layers is used to decode that
-vector. 
-The network is trained by first greedily training the convolutional layers until 
-just before overfitting, then I train the inner layers for one epoch. Lastly, I 
-train the full network on a large dataset.
+## 3) train_neural_networks
+This directory contains the scripts used to train neural networks that may then be used for particle picking. CDAE.py trains a contractive, denoising autoencoder that is able to reconstruct a denoised image from a noisy input. The network architecture employed in this project has been largely replaced by a fully convolutional approach (https://github.com/alushinlab/plastin_bundles), but the dense layers used in this version have interesting implications in terms of manifold learning in the context of filament bending.
 
-**The script for this is still under development. I will update the README.md documentation when it is close to being in its final form**
+**To Run CDAE.py**
+
+Have two directories containing noisy/noiseless projection pairs.
+
+Hard code the number of images from the training set that you would like to load as well as the output file names. You may also change hard-coded parameters specific to training to optimize it for a particular use case. The program does not accept command-line arguments, so to run it simply enter:
+```
+./CDAE.py
+```
+**Outputs**
+- Saved neural network in .h5 file
 
 
-## 4) neural_network_predictions
+
+**To Run train_FCN_for_semseg.py**
+Provide similar input as for CDAE.py, but provide the directory to a set of noisy projections and the corresponding set of semantically segmented images.
+
+Hard code the number of images from the training set that you would like to load as well as the output file names. You may also change hard-coded parameters specific to training to optimize it for a particular use case. The program does not accept command-line arguments, so to run it simply enter:
+```
+./train_FCN_for_semseg.py
+```
+**Outputs**
+- Saved neural network in .h5 file
+
+
+
+
+
+## 4) particle_picking_scripts
 Currently this code is at the end of the previous script. I will decouple these 
 two scripts in my next iteration so that I can first train a network, and then 
 once that network is trained, I can use it to make predictions and see my encoded 
