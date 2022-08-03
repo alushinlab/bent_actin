@@ -1,1 +1,1 @@
-hi
+This directory contains the script necessary to model the thermal bending fluctuations of a population of elastic rods using a Boltzmann distribution. These Boltzmann models were compared to measured curvature distributions of F-actin. The data for the curvature distributions are accessible at: https://doi.org/10.5281/zenodo.6928604 in the curvature_measurements.zip file.
