@@ -1,1 +1,1 @@
-hi
+This directory contains the scripts that were run to compute the per-alpha-carbon strain pseudoenergy between various models. This script was translated to python (with some adjustments to account for package differences and to properly handle input data using python) from a matlab script provided by Rama Ranganathan.
