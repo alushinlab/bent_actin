@@ -4,7 +4,7 @@ organized into four different sections:
 1) make\_bent\_actin: creates 
 2) generate\_synthetic\_data
 3) train\_neural\_networks
-4) particle\picking\scripts
+4) particle\_picking\_scripts
 
 ## 1) make_bent_actin
 In make\_bent\_actin, there are two provided python files:
