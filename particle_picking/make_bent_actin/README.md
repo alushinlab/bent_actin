@@ -1,1 +1,1 @@
-Hello
+This directory contains the command line program generate_bent_actin_streamlined.py, which generates synthetic, bent actin filaments according to user specifications. The included pdb is required to run the program.
