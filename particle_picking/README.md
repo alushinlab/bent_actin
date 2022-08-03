@@ -1,4 +1,4 @@
-# Bending Actin Project
+# Neural network-based particle picking
 This repository stores the files used for particle picking using a custom neural network approach. It is currently
 organized into four different sections:
 1) make\_bent\_actin: creates 
