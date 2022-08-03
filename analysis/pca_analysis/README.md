@@ -1,1 +1,1 @@
-hi
+The plot_pca_params.py script was used to generate plots of the principal component analysis of the central axes from the deformed actin models. Points interpolated along the central axis of each model and the PCA measurements are also provided. 
