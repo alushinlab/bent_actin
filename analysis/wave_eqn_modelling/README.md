@@ -1,1 +1,1 @@
-hi
+This directory contains the script used to model the bend-twist measurements as a wave equation. This script requires that one has already measured the rise, twist, and central axis coordinates of a set of models built into the cryoDRGN maps.
