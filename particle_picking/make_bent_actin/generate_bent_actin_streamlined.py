@@ -1,4 +1,4 @@
-#!/mnt/data1/Matt/anaconda_install/anaconda2/envs/tf-gpu/bin/python
+#!/mnt/data1/Matt/anaconda_install/anaconda2/envs/matt_EMAN2/bin/python
 ################################################################################
 import argparse; import sys
 parser = argparse.ArgumentParser('Generate a PDB file of a bent actin filament.')
