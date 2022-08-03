@@ -1,1 +1,2 @@
 This directory contains scripts used to generate synethetic data. projection_generator.py generates synthetic projections of bent actin that are either noiseless or noisy. These projection pairs are used to train the DAE. multiple_filaments_projection_generator.py generates synthetic projections of bent actin that are either noisy or noiseless and binarized. These projection pairs are used to train the FCN-SS.
+These scripts require a library of volumes to generate the projections.
